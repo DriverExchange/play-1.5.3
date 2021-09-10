@@ -44,18 +44,21 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+
 import static org.jboss.netty.buffer.ChannelBuffers.wrappedBuffer;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
 
 public class PlayHandler extends SimpleChannelUpstreamHandler {
-    
-    
+
+
     private static final String X_HTTP_METHOD_OVERRIDE = "X-HTTP-Method-Override";
 
     /**
@@ -77,7 +80,7 @@ public class PlayHandler extends SimpleChannelUpstreamHandler {
     public Map<String, ChannelHandler> pipelines = new HashMap<>();
 
     private WebSocketServerHandshaker handshaker;
-    
+
     /**
      * Define allowed methods that will be handled when defined in X-HTTP-Method-Override
      * You can define allowed method in
@@ -182,7 +185,7 @@ public class PlayHandler extends SimpleChannelUpstreamHandler {
         private final MessageEvent event;
 
         public NettyInvocation(Request request, Response response, ChannelHandlerContext ctx, HttpRequest nettyRequest,
-                MessageEvent e) {
+                               MessageEvent e) {
             this.ctx = ctx;
             this.request = request;
             this.response = response;
@@ -383,7 +386,7 @@ public class PlayHandler extends SimpleChannelUpstreamHandler {
     }
 
     protected static void writeResponse(ChannelHandlerContext ctx, Response response, HttpResponse nettyResponse,
-            HttpRequest nettyRequest) {
+                                        HttpRequest nettyRequest) {
         if (Logger.isTraceEnabled()) {
             Logger.trace("writeResponse: begin");
         }
@@ -444,7 +447,7 @@ public class PlayHandler extends SimpleChannelUpstreamHandler {
                     .set(CONTENT_TYPE,
                             response.contentType + (response.contentType.startsWith("text/")
                                     && !response.contentType.contains("charset") ? "; charset=" + response.encoding
-                                            : ""));
+                                    : ""));
         } else {
             nettyResponse.headers().set(CONTENT_TYPE, "text/plain; charset=" + response.encoding);
         }
@@ -853,7 +856,7 @@ public class PlayHandler extends SimpleChannelUpstreamHandler {
     }
 
     public void serveStatic(RenderStatic renderStatic, ChannelHandlerContext ctx, Request request, Response response,
-            HttpRequest nettyRequest, MessageEvent e) {
+                            HttpRequest nettyRequest, MessageEvent e) {
         if (Logger.isTraceEnabled()) {
             Logger.trace("serveStatic: begin");
         }
@@ -1022,7 +1025,7 @@ public class PlayHandler extends SimpleChannelUpstreamHandler {
     }
 
     public void writeChunk(Request playRequest, Response playResponse, ChannelHandlerContext ctx,
-            HttpRequest nettyRequest, Object chunk) {
+                           HttpRequest nettyRequest, Object chunk) {
         try {
             if (playResponse.direct == null) {
                 playResponse.setHeader("Transfer-Encoding", "chunked");
@@ -1043,7 +1046,7 @@ public class PlayHandler extends SimpleChannelUpstreamHandler {
     }
 
     public void closeChunked(Request playRequest, Response playResponse, ChannelHandlerContext ctx,
-            HttpRequest nettyRequest) {
+                             HttpRequest nettyRequest) {
         try {
             ((LazyChunkedInput) playResponse.direct).close();
             if (this.pipelines.get("ChunkedWriteHandler") != null) {
@@ -1217,7 +1220,7 @@ public class PlayHandler extends SimpleChannelUpstreamHandler {
         MessageEvent e;
 
         public WebSocketInvocation(Map<String, String> route, Http.Request request, Http.Inbound inbound,
-                Http.Outbound outbound, ChannelHandlerContext ctx, MessageEvent e) {
+                                   Http.Outbound outbound, ChannelHandlerContext ctx, MessageEvent e) {
             this.route = route;
             this.request = request;
             this.inbound = inbound;
