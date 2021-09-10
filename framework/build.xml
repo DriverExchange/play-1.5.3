@@ -37,16 +37,6 @@
             <fileset dir="pym">
                 <include name="**/*.pyc"/>
             </fileset>
-            <fileset dir="../samples-and-tests">
-                <include name="**/test-result/**"/>
-                <include name="**/tmp/**"/>
-                <include name="**/db/**"/>
-                <include name="**/attachments/**"/>
-                <include name="**/nbproject/**"/>
-                <include name="**/data/**"/>
-                <include name="**/logs/**"/>
-                <include name="**/i-am-working-here/**"/>
-            </fileset>
         </delete>
         <antcall target="clean-unittest"/>
     </target>
