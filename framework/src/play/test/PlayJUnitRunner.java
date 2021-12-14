@@ -1,8 +1,6 @@
 package play.test;
 
 import java.io.File;
-import java.net.URISyntaxException;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.junit.rules.MethodRule;
 import org.junit.runner.Description;

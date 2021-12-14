@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -220,11 +219,7 @@ public class Play {
         Play.classes = new ApplicationClasses();
 
         // Configure logs
-        try {
-            Logger.init();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+        Logger.init();
         String logLevel = configuration.getProperty("application.log", "INFO");
 
         // only override log-level if Logger was not configured manually
