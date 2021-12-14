@@ -1,6 +1,7 @@
 package play.db;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,7 +45,7 @@ public class Evolutions extends PlayPlugin {
 
     private static Map<String, VirtualFile> modulesWithEvolutions = new LinkedHashMap<>();
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, URISyntaxException {
         /** Start the DB plugin **/
         Play.guessFrameworkPath();
         Play.readConfiguration();

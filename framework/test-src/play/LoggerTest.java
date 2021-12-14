@@ -5,11 +5,10 @@ package play;
 
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.Properties;
-
-
-
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -36,7 +35,7 @@ public class LoggerTest {
     
     private static String id;
     
-    private static org.apache.log4j.Logger log4j;
+    private static org.apache.logging.log4j.Logger log4j;
     
     /**
      * Safes the original configuration and log.
@@ -81,11 +80,11 @@ public class LoggerTest {
      * Test method for {@link play.Logger#init()}.
      */
     @Test
-    public void testInitWithProperties() {        
+    public void testInitWithProperties() throws URISyntaxException {
         Play.configuration.put(APPLICATION_LOG_PATH_PROPERTYNAME, "/play/testlog4j.properties");
         Logger.log4j=null;
         Logger.init();
-        org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger.getLogger("logtest.properties");
+        org.apache.logging.log4j.Logger log4jLogger = LogManager.getLogger("logtest.properties");
         assertEquals(Level.ERROR,  log4jLogger.getLevel());
     }
 
@@ -93,11 +92,11 @@ public class LoggerTest {
      * Test method for {@link play.Logger#init()}.
      */
     @Test
-    public void testInitWithXML() {        
+    public void testInitWithXML() throws URISyntaxException {
         Play.configuration.put(APPLICATION_LOG_PATH_PROPERTYNAME, "/play/testlog4j.xml");
         Logger.log4j=null;
         Logger.init();
-        org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger.getLogger("logtest.xml");
+        org.apache.logging.log4j.Logger log4jLogger = LogManager.getLogger("logtest.xml");
         assertEquals(Level.ERROR,  log4jLogger.getLevel());
     }
 }

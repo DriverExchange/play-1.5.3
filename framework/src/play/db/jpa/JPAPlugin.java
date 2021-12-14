@@ -1,6 +1,9 @@
 package play.db.jpa;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl;
 import org.hibernate.jpa.boot.internal.PersistenceUnitInfoDescriptor;
@@ -107,15 +110,19 @@ public class JPAPlugin extends PlayPlugin {
      * Reads the configuration file and initialises required JPA EntityManagerFactories.
      */
     @Override
-    public void onApplicationStart() {  
-        org.apache.log4j.Logger.getLogger("org.hibernate.SQL").setLevel(Level.OFF);
+    public void onApplicationStart() {
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        final org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();
+        LoggerConfig loggerApacheConfig = config.getLoggerConfig("com.apache.test");
+        loggerApacheConfig.setLevel(Level.OFF);
 
         Set<String> dBNames = Configuration.getDbNames();
         for (String dbName : dBNames) {
             Configuration dbConfig = new Configuration(dbName);
             
             if (dbConfig.getProperty("jpa.debugSQL", "false").equals("true")) {
-                org.apache.log4j.Logger.getLogger("org.hibernate.SQL").setLevel(Level.ALL);
+                LoggerConfig loggerHibernateConfig = config.getLoggerConfig("org.hibernate.SQL");
+                loggerHibernateConfig.setLevel(Level.ALL);
             }
 
             Thread thread = Thread.currentThread();
