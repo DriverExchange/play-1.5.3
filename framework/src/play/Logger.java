@@ -13,12 +13,16 @@ import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.Priority;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
+import org.apache.log4j.MDC;
 
 import play.exceptions.PlayException;
 
@@ -54,6 +58,9 @@ public class Logger {
     public static boolean configuredManually = false;
 
     public static boolean usesJuli() { return forceJuli || log4j == null; }
+
+    private static String CORRELATION_ID = "correlation_id";
+    private static String SESSION_ID = "session_id";
 
     /**
      * Try to init stuff.
@@ -309,13 +316,26 @@ public class Logger {
                         // logged (level)
                         org.apache.log4j.Logger.getLogger(getCallerClassName()).info(format(message, args));
                     } else {
-                        log4j.info(format(message, args));
+                        final String finalMessage = getFormattedMessage(message, args);
+                        log4j.info(finalMessage);
                     }
                 } catch (Throwable ex) {
                     log4j.error("Oops. Error in Logger !", ex);
                 }
             }
         }
+    }
+
+    public static void addCorrelationIDToMDC(String correlationId){
+        MDC.put(CORRELATION_ID, correlationId);
+    }
+
+    public static void addSessionIDToMDC(String sessionId){
+        MDC.put(SESSION_ID, sessionId);
+    }
+
+    public static void clearMDC(){
+        MDC.clear();
     }
 
     /**
@@ -340,7 +360,8 @@ public class Logger {
                         if (recordCaller) {
                             org.apache.log4j.Logger.getLogger(getCallerClassName()).info(format(message, args), e);
                         } else {
-                            log4j.info(format(message, args), e);
+                            final String finalMessage = getFormattedMessage(message, args);
+                            log4j.info(finalMessage, e);
                         }
                     }
                 } catch (Throwable ex) {
@@ -368,7 +389,8 @@ public class Logger {
                     if (recordCaller) {
                         org.apache.log4j.Logger.getLogger(getCallerClassName()).warn(format(message, args));
                     } else {
-                        log4j.warn(format(message, args));
+                        final String finalMessage = getFormattedMessage(message, args);
+                        log4j.warn(finalMessage);
                     }
                 } catch (Throwable ex) {
                     log4j.error("Oops. Error in Logger !", ex);
@@ -399,7 +421,8 @@ public class Logger {
                         if (recordCaller) {
                             org.apache.log4j.Logger.getLogger(getCallerClassName()).warn(format(message, args), e);
                         } else {
-                            log4j.warn(format(message, args), e);
+                            final String finalMessage = getFormattedMessage(message, args);
+                            log4j.warn(finalMessage, e);
                         }
                     }
                 } catch (Throwable ex) {
@@ -427,7 +450,8 @@ public class Logger {
                     if (recordCaller) {
                         org.apache.log4j.Logger.getLogger(getCallerClassName()).error(format(message, args));
                     } else {
-                        log4j.error(format(message, args));
+                        final String finalMessage = getFormattedMessage(message, args);
+                        log4j.error(finalMessage);
                     }
                 } catch (Throwable ex) {
                     log4j.error("Oops. Error in Logger !", ex);
@@ -458,7 +482,8 @@ public class Logger {
                         if (recordCaller) {
                             org.apache.log4j.Logger.getLogger(getCallerClassName()).error(format(message, args), e);
                         } else {
-                            log4j.error(format(message, args), e);
+                            final String finalMessage = getFormattedMessage(message, args);
+                            log4j.error(finalMessage, e);
                         }
                     }
                 } catch (Throwable ex) {
@@ -466,6 +491,16 @@ public class Logger {
                 }
             }
         }
+    }
+
+    private static String getFormattedMessage(final String message, final Object[] args) {
+        final Object correlationId = MDC.get(CORRELATION_ID);
+        final Object sessionId = MDC.get(SESSION_ID);
+        final Object loggedMessage = format(message, args);
+        final LoggedObject loggedObject = new LoggedObject(correlationId, sessionId, loggedMessage);
+        final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        final String finalMessage = gson.toJson(loggedObject);
+        return finalMessage;
     }
 
     /**
