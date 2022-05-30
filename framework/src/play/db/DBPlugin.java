@@ -8,6 +8,12 @@ import play.PlayPlugin;
 import play.db.DB.ExtendedDatasource;
 import play.exceptions.DatabaseException;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.services.rds.auth.GetIamAuthTokenRequest;
+import com.amazonaws.services.rds.auth.RdsIamAuthTokenGenerator;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
@@ -15,9 +21,27 @@ import java.io.File;
 import java.sql.*;
 import java.util.*;
 
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+
 public class DBPlugin extends PlayPlugin {
 
     public static String url = "";
+    public static final DefaultAWSCredentialsProviderChain creds = new DefaultAWSCredentialsProviderChain();
+    public static final String AWS_ACCESS_KEY = creds.getCredentials().getAWSAccessKeyId();
+    public static final String AWS_SECRET_KEY = creds.getCredentials().getAWSSecretKey();
+
+    private static final String SSL_CERTIFICATE = "rds-ca-2019-root.pem";
+
+    private static final String KEY_STORE_TYPE = "JKS";
+    private static final String KEY_STORE_PROVIDER = "SUN";
+    private static final String KEY_STORE_FILE_PREFIX = "sys-connect-via-ssl-test-cacerts";
+    private static final String KEY_STORE_FILE_SUFFIX = ".jks";
+    private static final String DEFAULT_KEY_STORE_PASSWORD = "mypasstest1!";
    
     protected DataSourceFactory factory(Configuration dbConfig) {
         String dbFactory = dbConfig.getProperty("db.factory", "play.db.hikaricp.HikariDataSourceFactory");
@@ -85,6 +109,16 @@ public class DBPlugin extends PlayPlugin {
                         try {
                             if (dbConfig.getProperty("db.user") == null) {
                                 fake = DriverManager.getConnection(dbConfig.getProperty("db.url"));
+                            } else if (dbConfig.getProperty("db.host") != null) {
+                                setSslProperties();
+                                java.util.Properties info = new java.util.Properties();
+                                info.put("user", dbConfig.getProperty("db.user"));
+                                String password = generateAuthToken(dbConfig);
+                                info.put("password", password);
+                                info.put("verifyServerCertificate", "true");
+                                info.put("useSSL", "true");
+                                info.put("sslmode", "require");
+                                fake = DriverManager.getConnection(dbConfig.getProperty("db.url"), info);
                             } else {
                                 fake = DriverManager.getConnection(dbConfig.getProperty("db.url"), dbConfig.getProperty("db.user"), dbConfig.getProperty("db.pass"));
                             }
@@ -118,6 +152,61 @@ public class DBPlugin extends PlayPlugin {
                 throw new DatabaseException("Cannot connected to the database["+ dbName + "], " + e.getMessage(), e);
             }
         }
+    }
+
+    public static String generateAuthToken(Configuration dbConfig) {
+
+        BasicAWSCredentials awsCredentials = new BasicAWSCredentials(AWS_ACCESS_KEY, AWS_SECRET_KEY);
+
+        RdsIamAuthTokenGenerator generator = RdsIamAuthTokenGenerator.builder()
+                .credentials(new AWSStaticCredentialsProvider(awsCredentials)).region(dbConfig.getProperty("aws.region", "eu-west-2")).build();
+
+        String authToken = generator.getAuthToken(
+                GetIamAuthTokenRequest.builder()
+                        .hostname(dbConfig.getProperty("db.ro.host"))
+                        .port(Integer.valueOf(dbConfig.getProperty("db.ro.port", "5432")))
+                        .userName(dbConfig.getProperty("db.ro.user"))
+                        .build());
+
+        return authToken;
+    }
+
+    private static void setSslProperties() throws Exception {
+        System.setProperty("javax.net.ssl.trustStore", createKeyStoreFile());
+        System.setProperty("javax.net.ssl.trustStoreType", KEY_STORE_TYPE);
+        System.setProperty("javax.net.ssl.trustStorePassword", DEFAULT_KEY_STORE_PASSWORD);
+    }
+
+    public static String createKeyStoreFile() throws Exception {
+        return createKeyStoreFile(createCertificate()).getPath();
+    }
+
+    private static X509Certificate createCertificate() throws Exception {
+        CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+        URL url = new File(SSL_CERTIFICATE).toURI().toURL();
+        if (url == null) {
+            throw new Exception();
+        }
+        try (InputStream certInputStream = url.openStream()) {
+            return (X509Certificate) certFactory.generateCertificate(certInputStream);
+        }
+    }
+
+    private static File createKeyStoreFile(X509Certificate rootX509Certificate) throws Exception {
+        File keyStoreFile = File.createTempFile(KEY_STORE_FILE_PREFIX, KEY_STORE_FILE_SUFFIX);
+        try (FileOutputStream fos = new FileOutputStream(keyStoreFile.getPath())) {
+            KeyStore ks = KeyStore.getInstance(KEY_STORE_TYPE, KEY_STORE_PROVIDER);
+            ks.load(null);
+            ks.setCertificateEntry("rootCaCertificate", rootX509Certificate);
+            ks.store(fos, DEFAULT_KEY_STORE_PASSWORD.toCharArray());
+        }
+        return keyStoreFile;
+    }
+
+    public static void clearSslProperties() throws Exception {
+        System.clearProperty("javax.net.ssl.trustStore");
+        System.clearProperty("javax.net.ssl.trustStoreType");
+        System.clearProperty("javax.net.ssl.trustStorePassword");
     }
 
     protected String testDataSource(DataSource ds) throws SQLException {
