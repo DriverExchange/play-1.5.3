@@ -54,7 +54,7 @@
 
     <target name="compile" description="compile without cleaning">
         <mkdir dir="classes"/>
-        <javac encoding="utf-8" srcdir="src" destdir="classes" debug="true" source="11" target="11">
+        <javac encoding="utf-8" srcdir="src" destdir="classes" debug="true" source="17" target="17">
             <classpath refid="project.classpath" />
         </javac>
         <copy todir="classes">
