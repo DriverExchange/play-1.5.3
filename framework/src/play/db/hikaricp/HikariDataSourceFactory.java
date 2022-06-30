@@ -148,14 +148,5 @@ public class HikariDataSourceFactory implements DataSourceFactory {
     return ((HikariConfig) ds).getUsername();
   }
 
-  private static Properties getSqlConnectionProperties(Configuration dbConfig) {
-    Properties sqlConnectionProperties = new Properties();
-    sqlConnectionProperties.setProperty("verifyServerCertificate", "true");
-    sqlConnectionProperties.setProperty("useSSL", "true");
-    sqlConnectionProperties.setProperty("user", dbConfig.getProperty("db.user"));
-    sqlConnectionProperties.setProperty("password", DBPlugin.generateAuthToken(dbConfig));
-    return sqlConnectionProperties;
-  }
-
 }
 
