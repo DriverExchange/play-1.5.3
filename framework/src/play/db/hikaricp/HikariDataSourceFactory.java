@@ -1,4 +1,4 @@
-package tools.dbhelper;
+package play.db.hikaricp;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -28,12 +28,12 @@ public class HikariDataSourceFactory implements DataSourceFactory {
 
   @Override
   public DataSource createDataSource(Configuration dbConfig) throws PropertyVetoException, SQLException {
-    HikariDataSource ds = new HikariDataSource();
+    HikariDataSource ds = dbConfig.getProperty("db.url").toLowerCase().startsWith("jdbc:iampostgresql") ?
+            new RdsIamHikariDataSource() : new HikariDataSource();
     ds.setDriverClassName(dbConfig.getProperty("db.driver"));
     ds.setJdbcUrl(dbConfig.getProperty("db.url"));
-    Properties props = getSqlConnectionProperties(dbConfig);
-    ds.setUsername(props.getProperty("user"));
-    ds.setPassword(props.getProperty("password"));
+    ds.setUsername(dbConfig.getProperty("db.user"));
+    ds.setPassword(dbConfig.getProperty("db.password"));
     ds.setAutoCommit(false);
     ds.setConnectionTimeout(parseLong(dbConfig.getProperty("db.pool.timeout", "5000")));
     ds.setMaximumPoolSize(parseInt(dbConfig.getProperty("db.pool.maxSize", "30")));
@@ -102,13 +102,13 @@ public class HikariDataSourceFactory implements DataSourceFactory {
 
     for (String dbName : dbNames) {
       DataSource ds = DB.getDataSource(dbName);
-      if (ds == null || !(ds instanceof HikariDataSource)) {
+      if (ds == null || !(ds instanceof RdsIamHikariDataSource)) {
         out.println("Datasource:");
         out.println("~~~~~~~~~~~");
         out.println("(not yet connected)");
         return sw.toString();
       }
-      HikariDataSource datasource = (HikariDataSource) ds;
+      RdsIamHikariDataSource datasource = (RdsIamHikariDataSource) ds;
       out.println("Datasource (" + dbName + "):");
       out.println("~~~~~~~~~~~");
       out.println("Jdbc url: " + getJdbcUrl(datasource));
@@ -150,9 +150,9 @@ public class HikariDataSourceFactory implements DataSourceFactory {
 
   private static Properties getSqlConnectionProperties(Configuration dbConfig) {
     Properties sqlConnectionProperties = new Properties();
-    sqlConnectionProperties.setProperty("verifyServerCertificate","true");
+    sqlConnectionProperties.setProperty("verifyServerCertificate", "true");
     sqlConnectionProperties.setProperty("useSSL", "true");
-    sqlConnectionProperties.setProperty("user", dbConfig.getProperty("db.ro.user"));
+    sqlConnectionProperties.setProperty("user", dbConfig.getProperty("db.user"));
     sqlConnectionProperties.setProperty("password", DBPlugin.generateAuthToken(dbConfig));
     return sqlConnectionProperties;
   }
