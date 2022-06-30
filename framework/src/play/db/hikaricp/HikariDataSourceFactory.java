@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
-import java.util.Properties;
 import java.util.Set;
 
 import static java.lang.Integer.parseInt;
