@@ -157,8 +157,8 @@ public class DBPlugin extends PlayPlugin {
         String authToken = generator.getAuthToken(
                 GetIamAuthTokenRequest.builder()
                         .hostname(splitted[0])
-                        .port(Integer.valueOf(dbConfig.getProperty("db.ro.port") == null ? dbConfig.getProperty("db.port", "5432") : dbConfig.getProperty("db.ro.port", "5432")))
-                        .userName(dbConfig.getProperty("db.ro.user") == null ? dbConfig.getProperty("db.user") : dbConfig.getProperty("db.ro.user"))
+                        .port(Integer.valueOf(dbConfig.getProperty("db.port", "5432")))
+                        .userName(dbConfig.getProperty("db.user"))
                         .build());
 
         return authToken;
