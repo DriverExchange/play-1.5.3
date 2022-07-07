@@ -24,9 +24,9 @@ import java.util.*;
 public class DBPlugin extends PlayPlugin {
 
     public static String url = "";
-    public static final DefaultAWSCredentialsProviderChain creds = new DefaultAWSCredentialsProviderChain();
-    public static final String AWS_ACCESS_KEY = creds.getCredentials().getAWSAccessKeyId();
-    public static final String AWS_SECRET_KEY = creds.getCredentials().getAWSSecretKey();
+    public static DefaultAWSCredentialsProviderChain creds;
+    public static String AWS_ACCESS_KEY;
+    public static String AWS_SECRET_KEY;
    
     protected DataSourceFactory factory(Configuration dbConfig) {
         String dbFactory = dbConfig.getProperty("db.factory", "play.db.hikaricp.HikariDataSourceFactory");
@@ -61,6 +61,13 @@ public class DBPlugin extends PlayPlugin {
                 while (it.hasNext()) {
                     dbName = it.next();
                     Configuration dbConfig = new Configuration(dbName);
+
+                    if (dbConfig.getProperty("db.url") != null
+                            && dbConfig.getProperty("db.url").toLowerCase().startsWith("jdbc:iampostgresql")) {
+                        creds = new DefaultAWSCredentialsProviderChain();
+                        AWS_ACCESS_KEY = creds.getCredentials().getAWSAccessKeyId();
+                        AWS_SECRET_KEY = creds.getCredentials().getAWSSecretKey();
+                    }
                     
                     boolean isJndiDatasource = false;
                     String datasourceName = dbConfig.getProperty("db", "");
