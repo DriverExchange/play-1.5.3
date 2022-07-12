@@ -79,6 +79,7 @@ public class DBPlugin extends PlayPlugin {
 
                     if (dbConfig.getProperty("db.url") != null
                             && dbConfig.getProperty("db.url").toLowerCase().startsWith("jdbc:iampostgresql")) {
+                        Logger.info("initializing ssl and aim auth settings");
                         setSslProperties();
                         creds = new DefaultAWSCredentialsProviderChain();
                         AWS_ACCESS_KEY = creds.getCredentials().getAWSAccessKeyId();
