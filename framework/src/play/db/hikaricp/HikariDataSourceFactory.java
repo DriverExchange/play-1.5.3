@@ -1,14 +1,20 @@
 package play.db.hikaricp;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.rds.auth.GetIamAuthTokenRequest;
+import com.amazonaws.services.rds.auth.RdsIamAuthTokenGenerator;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import play.Play;
 import play.db.Configuration;
-import play.db.DB;
 import play.db.DataSourceFactory;
+import play.db.DB;
+import play.db.DBPlugin;
 
 import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
@@ -21,7 +27,8 @@ public class HikariDataSourceFactory implements DataSourceFactory {
 
   @Override
   public DataSource createDataSource(Configuration dbConfig) throws PropertyVetoException, SQLException {
-    HikariDataSource ds = new HikariDataSource();
+    HikariDataSource ds = dbConfig.getProperty("db.url").toLowerCase().startsWith("jdbc:iampostgresql") ?
+            new RdsIamHikariDataSource() : new HikariDataSource();
     ds.setDriverClassName(dbConfig.getProperty("db.driver"));
     ds.setJdbcUrl(dbConfig.getProperty("db.url"));
     ds.setUsername(dbConfig.getProperty("db.user"));
@@ -39,7 +46,7 @@ public class HikariDataSourceFactory implements DataSourceFactory {
     if (dbConfig.getProperty("db.pool.connectionInitSql") != null) {
       ds.setConnectionInitSql(dbConfig.getProperty("db.pool.connectionInitSql"));
     }
-    
+
     // not used in HikariCP:
     // db.pool.initialSize
     // db.pool.idleConnectionTestPeriod
@@ -68,10 +75,10 @@ public class HikariDataSourceFactory implements DataSourceFactory {
       ds.setConnectionTestQuery(dbConfig.getProperty("db.testquery"));
     } else {
       String driverClass = dbConfig.getProperty("db.driver");
-            /*
-             * Pulled from http://dev.mysql.com/doc/refman/5.5/en/connector-j-usagenotes-j2ee-concepts-connection-pooling.html
-             * Yes, the select 1 also needs to be in there.
-             */
+      /*
+       * Pulled from http://dev.mysql.com/doc/refman/5.5/en/connector-j-usagenotes-j2ee-concepts-connection-pooling.html
+       * Yes, the select 1 also needs to be in there.
+       */
       if (driverClass.equals("com.mysql.jdbc.Driver")) {
         ds.setConnectionTestQuery("/* ping */ SELECT 1");
       }
@@ -139,5 +146,6 @@ public class HikariDataSourceFactory implements DataSourceFactory {
   public String getUser(DataSource ds) {
     return ((HikariConfig) ds).getUsername();
   }
+
 }
 

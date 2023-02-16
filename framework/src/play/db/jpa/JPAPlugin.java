@@ -228,6 +228,8 @@ public class JPAPlugin extends PlayPlugin {
             return "play.db.jpa.MySQLDialect";
         } else if ("org.postgresql.Driver".equals(driver)) {
             return "org.hibernate.dialect.PostgreSQLDialect";
+        } else if ("io.magj.iamjdbcdriver.PostgreSqlIamAuthJdbcDriverWrapper".equals(driver)) {
+            return "org.hibernate.dialect.PostgreSQLDialect";
         } else if ("com.ibm.db2.jdbc.app.DB2Driver".equals(driver)) {
             return "org.hibernate.dialect.DB2Dialect";
         } else if ("com.ibm.as400.access.AS400JDBCDriver".equals(driver)) {
