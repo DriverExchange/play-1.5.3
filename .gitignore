@@ -7,6 +7,6 @@
 
 /modules/**/*.pyc
 /modules/**/*.iml
-/modules/grizzly/lib/play-*.jar
+/modules/**/lib/play-*.jar
 
 .DS_Store
