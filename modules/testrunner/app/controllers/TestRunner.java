@@ -26,7 +26,7 @@ public class TestRunner extends Controller {
         render(unitTests, functionalTests, seleniumTests);
     }
 
-    public static void list(Boolean runUnitTests, Boolean runFunctionalTests, Boolean runSeleniumTests) {
+    public static void list(Boolean runUnitTests, Boolean runFunctionalTests, Boolean runSeleniumTests, Integer testGroup) {
         StringWriter list = new StringWriter();
         PrintWriter p = new PrintWriter(list);
         p.println("---");
@@ -49,19 +49,21 @@ public class TestRunner extends Controller {
         }
         
         if(unitTests != null){
-            for(Class c : unitTests) {
-                p.println(c.getName() + ".class");
+            if(testGroup != null){
+                unitTests = unitTests.stream()
+                        .filter(clazz -> isTestFromCurrentGroup(clazz, testGroup)).toList();
             }
+            unitTests.stream()
+                    .map(clazz -> clazz.getName() + ".class")
+                    .forEach(p::println);
         }
         if(functionalTests != null){
-            for(Class c : functionalTests) {
-                p.println(c.getName() + ".class");
-            }
+            functionalTests.stream()
+                    .map(clazz -> clazz.getName() + ".class")
+                    .forEach(p::println);
         }
         if(seleniumTests != null){
-            for(String c : seleniumTests) {
-                p.println(c);
-            }
+            seleniumTests.forEach(p::println);
         }
         renderText(list);
     }
@@ -197,6 +199,10 @@ public class TestRunner extends Controller {
     	}
     	renderText(value);
     }
-	
+
+    private static boolean isTestFromCurrentGroup(Class clazz, Integer group) {
+        return clazz.isAnnotationPresent(TestGroup.class) &&
+                ((TestGroup) clazz.getAnnotation(TestGroup.class)).number() == group;
+    }
 }
 
