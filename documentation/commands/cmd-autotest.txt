@@ -8,7 +8,7 @@
 ~
 ~ Synopsis:
 ~ ~~~~~~~~~
-~ play auto-test [app_path] [--deps] [--unit] [--functional] [--selenium] [--timeout=xxx]
+~ play auto-test [app_path] [--deps] [--unit] [--functional] [--selenium] [--timeout=xxx] [--group=x]
 ~
 ~ Description:
 ~ ~~~~~~~~~~~~
@@ -46,4 +46,6 @@
 ~ --selenium: 
 ~ Run the selenium tests.
 ~ --timeout=xxx: 
-~ Specify the timeout for the webclient (the value of the timeout in milliseconds, 0 for an infinite wait)
+~ Specify the timeout for the webclient (the value of the timeout in milliseconds, 0 for an infinite wait).
+~ --group=x:
+~ The test group to be executed. The four available options are 1, 2, 3 and 4.

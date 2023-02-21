@@ -44,8 +44,9 @@ public class FirePhoque {
         String runUnitTests = System.getProperty("runUnitTests");
         String runFunctionalTests = System.getProperty("runFunctionalTests");
         String runSeleniumTests = System.getProperty("runSeleniumTests");
+        String testGroup = System.getProperty("group");
         
-        if(runUnitTests != null || runFunctionalTests != null || runSeleniumTests != null){
+        if(runUnitTests != null || runFunctionalTests != null || runSeleniumTests != null || testGroup != null){
             urlStringBuilder.append("?");
             urlStringBuilder.append("runUnitTests=").append(runUnitTests != null ? true : false);
             System.out.println("~ Run unit tests:" + (runUnitTests != null ? true : false));
@@ -55,6 +56,9 @@ public class FirePhoque {
 
             urlStringBuilder.append("&runSeleniumTests=").append(runSeleniumTests != null ? true : false);
             System.out.println("~ Run selenium tests:" + (runSeleniumTests != null ? true : false));
+
+            urlStringBuilder.append("&testGroup=").append(testGroup);
+            System.out.println("~ Test Group:" + testGroup);
         }
         
         try {
