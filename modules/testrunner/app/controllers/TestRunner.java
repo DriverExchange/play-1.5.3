@@ -47,11 +47,12 @@ public class TestRunner extends Controller {
         if (runSeleniumTests == null || runSeleniumTests) {
             seleniumTests = TestEngine.allSeleniumTests();
         }
-        
         if(unitTests != null){
-            if(testGroup != null){
+            TestGroup group = TestGroup.get(testGroup);
+            if(group != null){
                 unitTests = unitTests.stream()
-                        .filter(clazz -> isTestFromCurrentGroup(clazz, testGroup)).toList();
+                        .filter(clazz -> group.equals(getTestGroup(clazz)))
+                        .toList();
             }
             unitTests.stream()
                     .map(clazz -> clazz.getName() + ".class")
@@ -200,9 +201,12 @@ public class TestRunner extends Controller {
     	renderText(value);
     }
 
-    private static boolean isTestFromCurrentGroup(Class clazz, Integer group) {
-        return clazz.isAnnotationPresent(TestGroup.class) &&
-                ((TestGroup) clazz.getAnnotation(TestGroup.class)).number() == group;
+    private static TestGroup getTestGroup(Class clazz) {
+        TestGroup group = null;
+        if(clazz.isAnnotationPresent(TestAggregation.class)) {
+            group = ((TestAggregation) clazz.getAnnotation(TestAggregation.class)).group();
+        }
+        return group;
     }
 }
 
