@@ -58,7 +58,7 @@ public class FirePhoque {
             System.out.println("~ Run selenium tests:" + (runSeleniumTests != null ? true : false));
 
             urlStringBuilder.append("&testGroup=").append(testGroup);
-            System.out.println("~ Test Group:" + testGroup);
+            System.out.println("~ Test group:" + testGroup);
         }
         
         try {
