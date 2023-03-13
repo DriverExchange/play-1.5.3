@@ -17,6 +17,8 @@ import play.templates.TemplateLoader;
 import play.test.*;
 import play.vfs.*;
 
+import org.junit.Ignore;
+
 public class TestRunner extends Controller {
 
     public static void index() {
@@ -55,6 +57,7 @@ public class TestRunner extends Controller {
                         .toList();
             }
             unitTests.stream()
+                    .filter(clazz -> !clazz.isAnnotationPresent(Ignore.class))
                     .map(clazz -> clazz.getName() + ".class")
                     .forEach(p::println);
         }
