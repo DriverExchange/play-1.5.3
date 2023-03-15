@@ -17,6 +17,8 @@ import play.templates.TemplateLoader;
 import play.test.*;
 import play.vfs.*;
 
+import org.junit.Ignore;
+
 public class TestRunner extends Controller {
 
     public static void index() {
@@ -26,7 +28,7 @@ public class TestRunner extends Controller {
         render(unitTests, functionalTests, seleniumTests);
     }
 
-    public static void list(Boolean runUnitTests, Boolean runFunctionalTests, Boolean runSeleniumTests) {
+    public static void list(Boolean runUnitTests, Boolean runFunctionalTests, Boolean runSeleniumTests, Integer testGroup) {
         StringWriter list = new StringWriter();
         PrintWriter p = new PrintWriter(list);
         p.println("---");
@@ -47,21 +49,25 @@ public class TestRunner extends Controller {
         if (runSeleniumTests == null || runSeleniumTests) {
             seleniumTests = TestEngine.allSeleniumTests();
         }
-        
         if(unitTests != null){
-            for(Class c : unitTests) {
-                p.println(c.getName() + ".class");
+            TestGroup group = TestGroup.get(testGroup);
+            if(group != null){
+                unitTests = unitTests.stream()
+                        .filter(clazz -> group.equals(getTestGroup(clazz)))
+                        .toList();
             }
+            unitTests.stream()
+                    .filter(clazz -> !clazz.isAnnotationPresent(Ignore.class))
+                    .map(clazz -> clazz.getName() + ".class")
+                    .forEach(p::println);
         }
         if(functionalTests != null){
-            for(Class c : functionalTests) {
-                p.println(c.getName() + ".class");
-            }
+            functionalTests.stream()
+                    .map(clazz -> clazz.getName() + ".class")
+                    .forEach(p::println);
         }
         if(seleniumTests != null){
-            for(String c : seleniumTests) {
-                p.println(c);
-            }
+            seleniumTests.forEach(p::println);
         }
         renderText(list);
     }
@@ -197,6 +203,13 @@ public class TestRunner extends Controller {
     	}
     	renderText(value);
     }
-	
+
+    private static TestGroup getTestGroup(Class clazz) {
+        TestGroup group = null;
+        if(clazz.isAnnotationPresent(TestAggregation.class)) {
+            group = ((TestAggregation) clazz.getAnnotation(TestAggregation.class)).group();
+        }
+        return group;
+    }
 }
 

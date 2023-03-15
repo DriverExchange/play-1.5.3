@@ -1,2 +1,12 @@
-/.idea/
+.idea/
+
 /framework/classes/
+/framework/pym/
+/framework/framework.iml
+/framework/play*.jar
+
+/modules/**/*.pyc
+/modules/**/*.iml
+/modules/**/lib/play-*.jar
+
+.DS_Store
