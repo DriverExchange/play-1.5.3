@@ -86,13 +86,13 @@ def autotest(app, args):
         add_options.append('-DwebclientTimeout=' + weblcient_timeout)
 
     # Handle group parameter
-    test_group = 0
+    test_group = '0'
     for arg in args:
         if arg.startswith('--group='):
             args.remove(arg)
             test_group = arg[8:]
 
-    if test_group >= 0:
+    if test_group != '0':
         add_options.append('-Dgroup=' + test_group)
             
     # Run app
