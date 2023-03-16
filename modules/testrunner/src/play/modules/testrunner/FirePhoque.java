@@ -45,8 +45,9 @@ public class FirePhoque {
         String runFunctionalTests = System.getProperty("runFunctionalTests");
         String runSeleniumTests = System.getProperty("runSeleniumTests");
         String testGroup = System.getProperty("group");
-        
-        if(runUnitTests != null || runFunctionalTests != null || runSeleniumTests != null || testGroup != null){
+
+        boolean hasRunningFlags = runUnitTests != null || runFunctionalTests != null || runSeleniumTests != null;
+        if(hasRunningFlags){
             urlStringBuilder.append("?");
             urlStringBuilder.append("runUnitTests=").append(runUnitTests != null ? true : false);
             System.out.println("~ Run unit tests:" + (runUnitTests != null ? true : false));
@@ -56,11 +57,12 @@ public class FirePhoque {
 
             urlStringBuilder.append("&runSeleniumTests=").append(runSeleniumTests != null ? true : false);
             System.out.println("~ Run selenium tests:" + (runSeleniumTests != null ? true : false));
-
-            urlStringBuilder.append("&testGroup=").append(testGroup);
+        }
+        if(testGroup != null){
+            urlStringBuilder.append(hasRunningFlags ? "&" : "?").append("testGroup=").append(testGroup);
             System.out.println("~ Test group:" + testGroup);
         }
-        
+
         try {
             in = new BufferedReader(new InputStreamReader(new URL(urlStringBuilder.toString()).openStream(), "utf-8"));
             String marker = in.readLine();
