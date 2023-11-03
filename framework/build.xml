@@ -13,6 +13,12 @@
         </fileset>
     </path>
 
+    <typedef resource="org/jetbrains/kotlin/ant/antlib.xml">
+        <classpath>
+            <pathelement location="lib/kotlin-ant.jar"/>
+        </classpath>
+    </typedef>
+
     <path id="classpath.test">
         <pathelement location="classes" />
         <pathelement location="test-classes" />
@@ -54,8 +60,9 @@
 
     <target name="compile" description="compile without cleaning">
         <mkdir dir="classes"/>
-        <javac encoding="utf-8" srcdir="src" destdir="classes" debug="true" source="17" target="17">
+        <javac encoding="utf-8" srcdir="src" destdir="classes" debug="true" source="17" target="17" includeAntRuntime="false">
             <classpath refid="project.classpath" />
+            <withKotlin/>
         </javac>
         <copy todir="classes">
             <fileset dir="src">
