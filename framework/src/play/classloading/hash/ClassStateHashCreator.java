@@ -54,7 +54,7 @@ public class ClassStateHashCreator {
 
     private void scan(StringBuilder buf, VirtualFile current) {
         if (!current.isDirectory()) {
-            if (current.getName().endsWith(".java")) {
+            if (current.getName().endsWith(".java") || current.getName().endsWith(".kt")) {
                 buf.append( getClassDefsForFile(current));
             }
         } else if (!current.getName().startsWith(".")) {

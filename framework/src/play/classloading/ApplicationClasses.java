@@ -376,6 +376,11 @@ public class ApplicationClasses {
             if (javaFile.exists() && javaFile.matchName(fileName)) {
                 return javaFile;
             }
+            fileName = fileOrDir + ".kt";
+            javaFile = path.child(fileName);
+            if (javaFile.exists() && javaFile.matchName(fileName)) {
+                return javaFile;
+            }
         }
         return null;
     }

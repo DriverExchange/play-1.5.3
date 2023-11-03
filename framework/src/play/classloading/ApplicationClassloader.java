@@ -566,6 +566,10 @@ public class ApplicationClassloader extends ClassLoader {
                 String classname = packageName + current.getName().substring(0, current.getName().length() - 5);
                 classes.add(Play.classes.getApplicationClass(classname));
             }
+            if (current.getName().endsWith(".kt") && !current.getName().startsWith(".")) {
+                String classname = packageName + current.getName().substring(0, current.getName().length() - 3);
+                classes.add(Play.classes.getApplicationClass(classname));
+            }
         } else {
             for (VirtualFile virtualFile : current.list()) {
                 scan(classes, packageName + current.getName() + ".", virtualFile);
