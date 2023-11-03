@@ -10,3 +10,4 @@
 /modules/**/lib/play-*.jar
 
 .DS_Store
+/local-build/
